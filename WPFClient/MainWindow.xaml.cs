@@ -48,8 +48,10 @@ namespace WPFClient
 
             //SendRequest("", "https://localhost:5001/Home/InitialDb");
 
-            Update();
-
+            UpdateDb();
+            StartedOn.IsEnabled = false;
+            CompletedOn.IsEnabled = false;
+            Delete.IsEnabled = false;
         }
 
         void SendRequest(string jsonData, string url)
@@ -90,7 +92,7 @@ namespace WPFClient
         }
 
         // Загрузка данных из БД
-        async void Update()
+        async void UpdateDb()
         {
             connection.On<IEnumerable<Assignment>>("ReceiveDb", assignmentsSendDb =>
             {
@@ -115,7 +117,7 @@ namespace WPFClient
             try
             {
                 await connection.StartAsync();
-                await connection.InvokeAsync("SendDb");
+                await connection.InvokeAsync("UpdateDbAsync");
             }
             catch (Exception ex)
             {
@@ -132,6 +134,9 @@ namespace WPFClient
             selectedAssignmentButton.Description = selectedAssignment.Description;
             selectedAssignmentButton.StartedOn = selectedAssignment.StartedOn;
             selectedAssignmentButton.CompletedOn = selectedAssignment.CompletedOn;
+            StartedOn.IsEnabled = true;
+            CompletedOn.IsEnabled = true;
+            Delete.IsEnabled = true;
         }
 
 
@@ -169,13 +174,13 @@ namespace WPFClient
             try
             {
                 await connection.StartAsync();
-                await connection.InvokeAsync("Add", assignment);
+                await connection.InvokeAsync("AddAsync", assignment);
             }
             catch (Exception ex)
             {
                 Status.Text = ex.Message;
             }
-            Update();
+            UpdateDb();
         }
 
        
@@ -214,13 +219,16 @@ namespace WPFClient
             try
             {
                 await connection.StartAsync();
-                await connection.InvokeAsync("StartedOn", assignment);
+                await connection.InvokeAsync("StartedOnAsync", assignment);
             }
             catch (Exception ex)
             {
                 Status.Text = ex.Message;
             }
-            Update();
+            StartedOn.IsEnabled = false;
+            CompletedOn.IsEnabled = false;
+            Delete.IsEnabled = false;
+            UpdateDb();
         }
 
         private async void CompletedOn_Click(object sender, RoutedEventArgs e)
@@ -257,13 +265,16 @@ namespace WPFClient
             try
             {
                 await connection.StartAsync();
-                await connection.InvokeAsync("CompletedOn", assignment);
+                await connection.InvokeAsync("CompletedOnAsync", assignment);
             }
             catch (Exception ex)
             {
                 Status.Text = ex.Message;
             }
-            Update();
+            StartedOn.IsEnabled = false;
+            CompletedOn.IsEnabled = false;
+            Delete.IsEnabled = false;
+            UpdateDb();
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -288,20 +299,23 @@ namespace WPFClient
                         };
                         assignments.Add(Assignment);
                     }
-                    Status.Text = messageDeleteTaskD;
+                   Status.Text = messageDeleteTaskD;
                 });
             });
 
             try
             {
                 await connection.StartAsync();
-                await connection.InvokeAsync("DeleteTaskDb", id);
+                await connection.InvokeAsync("DeleteTaskDbAsync", id);
             }
             catch (Exception ex)
             {
                 Status.Text = ex.Message;
             }
-            Update();
+            StartedOn.IsEnabled = false;
+            CompletedOn.IsEnabled = false;
+            Delete.IsEnabled = false;
+            UpdateDb();
         }
 
         
